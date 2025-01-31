@@ -167,6 +167,21 @@ function aabb(a,b)
 		a.x + a.w > b.x or
 		a.y + a.h > b.y)
 end
+
+function cmap(o)
+	local collide = false
+	for i=o.x, o.x+o.w, o.w do
+		if (fget(mget(i/8,o.y)) > 0) then
+			collide = true
+		end
+	end
+	for i=o.y, o.y+o.h,o.h do
+		if (fget(mget(i/8,o.x)) > 0) then
+			collide = true
+		end
+	end
+	return collide
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
