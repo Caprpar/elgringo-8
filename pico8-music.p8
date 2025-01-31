@@ -2,7 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 -- init --
-function _init() 
+function _init()
+--	music(0) 
 	player={
 		x=70,
 		y=90,
@@ -36,7 +37,14 @@ function _update()
 	player.ox = player.x - 2
 	player.oy = player.y - 3
 
-	--player.dy+=gravity
+	-- teleport
+	if player.x+player.w > 128 then player.x = 1 end
+	if player.x < 0 then player.x = 123 end
+	if player.y+player.h > 128 then player.y = 1 end
+	if player.y < 0 then player.y = 123 end
+
+
+	player.dy+=gravity
  player.dx*=friction
 	player.dy*=friction
 	
@@ -471,7 +479,7 @@ __music__
 00 1e14430c
 00 1e17430e
 00 1e140f0c
-00 1e151013
+04 1e151013
 00 1e140f0c
 00 1f17100d
 00 21280f29
