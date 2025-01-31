@@ -4,8 +4,8 @@ __lua__
 -- init --
 function _init() 
 	player={
-		x=63,
-		y=63,
+		x=70,
+		y=90,
 		ox=0,
 		oy=0,
 		dx=0,
@@ -33,8 +33,8 @@ end
 -- update --
 function _update()
 	-- offset position
-	player.ox = player.x-4
-	player.oy = player.y-4
+	player.ox = player.x-2
+	player.oy = player.y-3
 
 	--player.dy+=gravity
  player.dx*=friction
@@ -72,6 +72,21 @@ function _update()
 	player.dy,
 	player.max_dy)
 	
+	-- collision calculation
+	if cmap((player.ox + player.dx),
+	 player.oy,
+	 player.w,
+	 player.h) then
+		player.dx = 0
+	end
+	
+	if cmap(player.ox,
+	(player.oy + player.dy),
+	player.w,
+	player.h) then
+		player.dy = 0
+	end
+	
 	player.x+=player.dx
 	player.y+=player.dy
 	
@@ -106,6 +121,8 @@ function _update()
 	end
 	
 	animate(coin,3,4)
+	
+	
 			
 end
 
@@ -133,8 +150,8 @@ function _draw()
 	local ax = flr(player.x)
 	local ay = flr(player.y)
 	print(ax)
-	print(fget(mget(ax/8, ay/8)))
-	print(cmap(player))
+	--print(fget(mget(ax/8, ay/8)))
+	--print(cmap(player))
 end
 -->8
 -- animate --
@@ -180,18 +197,18 @@ function aabb(a,b)
 		a.y + a.h > b.y)
 end
 
-function cmap(o)
+function cmap(x, y, w, h)
 	local col = false
 	--if (fget(mget(o.x, o.y)) > 0) then col = true end
-	for i=o.x, o.x+o.w, o.w do
-		if (fget(mget(i/8,o.y/8)) > 0) or
-		(fget(mget(i/8, (o.y + o.h)/8)) >0) then
+	for i=x, x+w, w do
+		if (fget(mget(i/8,y/8)) > 0) or
+		(fget(mget(i/8, (y + h)/8)) >0) then
 			col = true
 		end
 	end
-	for i=o.y, o.y+o.h,o.h do
-		if (fget(mget(i/8,o.x)) > 0) or 
-		(fget(mget(i/8,o.x + o.w)) > 0) then
+	for i=y, y+h,h do
+		if (fget(mget(i/8,x)) > 0) or 
+		(fget(mget(i/8,x + w)) > 0) then
 			col = true
 		end
 	end
