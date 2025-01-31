@@ -8,6 +8,8 @@ function _init()
 		y=63,
 		dx=0,
 		dy=0,
+		w=4,
+		h=5,
 		max_dx=3,
 		max_dy=3,
 		acc=0.5,
