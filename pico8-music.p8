@@ -16,7 +16,7 @@ function _init()
 		max_dx=3,
 		max_dy=3,
 		acc=0.5,--acceleration
-		boost=4,--boost nmbr?
+		boost=100,--jump_value
 		fliped=false,
 		sp=1,
 		running=false,
@@ -66,7 +66,7 @@ function _update()
 	if (btn(⬆️)) then
 		if not inffly then
 			if player.og then
-				player.dy-=player.acc * 5
+				player.dy-=player.acc * player.boost
 				player.og = false
 			end
 		else
