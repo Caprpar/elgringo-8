@@ -120,6 +120,10 @@ function _update()
 		player.dy = 0
 	end
 	
+	if player.dy > 0 then
+		player.og = false
+	end
+	
 	player.y+=player.dy
 	
 	-- set player action --
