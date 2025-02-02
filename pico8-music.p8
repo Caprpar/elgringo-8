@@ -13,10 +13,12 @@ function _init()
 		dy=0,--delta_y
 		w=3,--width added from x
 		h=4,--height added from y
-		max_dx=3,
-		max_dy=3,
+		max_dx=2,
+		max_dy=3,-- used before, now:
+		max_gravity=3,
+		max_jump=6,
 		acc=0.5,--acceleration
-		boost=100,--jump_value
+		boost=10,--jump_value
 		fliped=false,
 		sp=1,
 		running=false,
@@ -86,17 +88,16 @@ function _update()
 		inffly = not inffly
 	end
 	
-	-- update player cords --
-
-	player.dx=mid(
+	-- clamp speeds --
+	
+	player.dx=clamp(player.dx,
 	-player.max_dx,
-	player.dx,
 	player.max_dx)
-
-	player.dy=mid(
-	-player.max_dy,
+	
+	player.dy=clamp(
 	player.dy,
-	player.max_dy)
+	-player.max_jump,
+	player.max_gravity)
 	
 	-- collision calculation
 	if cmap((player.x + player.dx),
@@ -118,6 +119,10 @@ function _update()
 			end
 		end
 		player.dy = 0
+	end
+	
+	if player.dy > 0 then
+		player.og = false
 	end
 	
 	player.y+=player.dy
@@ -156,8 +161,6 @@ function _update()
 	
 	take_coin()
 	
-	
-			
 end
 
 -->8
@@ -176,6 +179,8 @@ function _draw()
 	if coin.act then
 		spr(coin.sp, coin.x, coin.y,1,1)
 	end
+	
+	-- informational prints
 	print("dx= "..player.dx,7)
 	print("dy= "..player.dy)
 	print(player.sp)
@@ -261,6 +266,18 @@ function cmap(x, y, w, h)
 		end
 	end
 	return col
+end
+-->8
+-- helper functions
+
+function clamp(val, mi, ma)
+	if (mi > val) then
+		val = mi
+	end
+	if (val > ma) then
+		val = ma
+	end
+	return val
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
