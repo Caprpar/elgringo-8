@@ -176,6 +176,8 @@ function _draw()
 	if coin.act then
 		spr(coin.sp, coin.x, coin.y,1,1)
 	end
+	
+	-- informational prints
 	print("dx= "..player.dx,7)
 	print("dy= "..player.dy)
 	print(player.sp)
