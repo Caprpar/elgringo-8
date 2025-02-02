@@ -3,6 +3,9 @@ version 42
 __lua__
 -- init --
 function _init()
+
+actors = {}
+
 --	music(0) 
 	player={
 		x=70,--global_x
@@ -24,6 +27,8 @@ function _init()
 		flying=false,
 		og=false, --on_ground
 	}
+	player=get_actor("player")
+	make_actor(player,63,10)
 	
 	inffly = false
 	
@@ -36,49 +41,55 @@ end
 -->8
 -- update --
 function _update()
-	-- offset position
-	player.ox = player.x - 2
-	player.oy = player.y - 3
+	
+	for i, a in ipairs(actors) do
+	 -- update each actors action
+
+		-- offset position
+		a.ox = a.x - 2
+		a.oy = a.y - 3
 
 	-- teleport
-	if player.x+player.w > 128 then player.x = 1 end
-	if player.x < 0 then player.x = 123 end
-	if player.y+player.h > 128 then player.y = 1 end
-	if player.y < 0 then player.y = 123 end
+	if a.x+a.w > 128 then a.x = 1 end
+	if a.x < 0 then a.x = 123 end
+	if a.y+a.h > 128 then a.y = 1 end
+	if a.y < 0 then a.y = 123 end
 
-
-	player.dy+=gravity
- player.dx*=friction
-	player.dy*=friction
+ -- apply gravity and friction
+	a.dy+=gravity
+ a.dx*=friction
+	a.dy*=friction
 	
-	-- movement detection --
-	
- if (btn(⬅️)) then 
-  player.dx-=player.acc
-  player.flipped = true
- end
- 
- if (btn(➡️)) then
-  player.dx+=player.acc
-  player.flipped = false
-	end
-	
-	if (btn(⬆️)) then
-		if not inffly then
-			if player.og then
-				player.dy-=player.acc * player.boost
-				player.og = false
-				sfx(00)
-			end
-		else
-			player.dy-=player.acc
+	-- movement detection for player --
+	if a.is_player then
+		
+		if (btn(⬅️)) then 
+			a.dx-=a.acc
+			a.flipped = true
 		end
+		
+		if (btn(➡️)) then
+			a.dx+=a.acc
+			a.flipped = false
+		end
+		
+		if (btn(⬆️)) then
+			if not inffly then
+				if a.og then
+					a.dy-=a.acc * a.boost
+					a.og = false
+					sfx(00)
+				end
+			else
+				a.dy-=a.acc
+			end
+		end
+		
+		if (btn(⬇️)) then
+			a.dy+=a.acc
+		end
+		
 	end
-	
-	if (btn(⬇️)) then
-		player.dy+=player.acc
-	end
-	
 	-- switch inf flight
 	if (btnp(🅾️, 1)) then
 		inffly = not inffly
@@ -86,42 +97,43 @@ function _update()
 	
 	-- update player cords --
 
-	player.dx=mid(
-	-player.max_dx,
-	player.dx,
-	player.max_dx)
+	a.dx=mid(
+	-a.max_dx,
+	a.dx,
+	a.max_dx)
 
-	player.dy=mid(
-	-player.max_dy,
-	player.dy,
-	player.max_dy)
+	a.dy=mid(
+	-a.max_dy,
+	a.dy,
+	a.max_dy)
 	
 	-- collision calculation
-	if cmap((player.x + player.dx),
-	 player.y,
-	 player.w,
-	 player.h) then
-		player.dx = 0
+	if cmap((a.x + a.dx),
+	 a.y,
+	 a.w,
+	 a.h) then
+		a.dx = 0
 	end
 	
-	player.x+=player.dx
+	a.x+=a.dx
 	
-	if cmap(player.x,
-	(player.y + player.dy),
-	player.w,
-	player.h) then
-		if not inffly then
-			if player.dy>0 then
-				player.og=true
+	if cmap(a.x,
+	(a.y + a.dy),
+	a.w,
+	a.h) then
+		if not inffly and is_player then
+			if a.dy>0 then
+				a.og=true
 			end
 		end
-		player.dy = 0
+		a.dy = 0
 	end
 	
-	player.y+=player.dy
+	a.y+=a.dy
+end
 	
 	-- set player action --
-	
+	--[[
 	if player.dx > .5 
 	or player.dx < -.5 then 
 		player.running = true
@@ -149,8 +161,7 @@ function _update()
 		animate(player,48,49)
 	else animate(player,0,1)
 	end
-	
-	animate(coin,3,4)
+	]]
 	
 	
 			
@@ -161,6 +172,11 @@ end
 function _draw() 
 	cls()
 	map(0,0,0,0,128,32)
+	for i, a in ipairs(actors) do
+		spr(a.sp,a.x,a.y)
+	end
+	
+	--[[
 	spr(
 		player.sp, 
 		player.ox,
@@ -178,6 +194,8 @@ function _draw()
 	print(player.x)
 	print(player.y)
 	print("i-fly="..tostr(inffly))
+]]
+
 end
 -->8
 -- animate --
@@ -245,6 +263,93 @@ function cmap(x, y, w, h)
 	end
 	return col
 end
+-->8
+-- make_actor --
+function make_actor(k,x,y)
+ --k = actor information
+    -- sprite, animations, 
+    -- height, width
+    -- offset_x, offset_y,
+    -- animations
+ a={
+		sp=k.sp,
+		w=k.w,
+		h=k.h,
+		ox=k.ox,
+		oy=k.oy,
+		is_player=k.is_player or false,
+		x=x,
+		y=y,
+		dx=0,
+		dy=0,
+		max_dx=3,
+		max_dy=3,
+		acc=0.5,
+		acc=0.5,--acceleration
+		boost=100,--jump_value
+		fliped=false,
+		running=false,
+		falling=false,
+		flying=false,
+		og=false, --on_ground
+	}
+	add(actors, a)
+ return a
+end
+
+function get_actor(a)
+-- return actor values 
+	if not is_legal_actor(a) then
+		return false
+		
+	elseif a == "player" then
+	k={
+		sp=1,
+		ox=0,--offset_x
+		oy=0,--offset_y
+		w=3,
+		h=4,
+		anims= {
+			walk={16,17,18},
+			fall={32,33},
+			idle={0,1},
+			jump={48,49}
+		},
+		is_player=true,
+	}
+	end
+	return k 
+end
+
+
+function is_legal_actor(a)
+	local is_legal = false
+	local legal_actors={"player","coin"} -- append when new actor is created
+	-- is actor legal
+	for i, la in ipairs(legal_actors) do
+		if a == la then 
+			is_legal=true
+			break
+		else
+			assert(false, "invaid actor " .. a)
+		end
+		
+	end
+	
+	-- is actor missing values
+	if not a.sp 
+	or not a.w 
+	or not a.h 
+	or not a.ox
+	or not a.oy then
+		--assert(false, a .. " is missing attributes")
+		return true
+	else
+		return true
+	end
+	
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
