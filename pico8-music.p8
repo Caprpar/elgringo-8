@@ -27,8 +27,19 @@ actors = {}
 		flying=false,
 		og=false, --on_ground
 	}]]
+	coin=get_actor("coin")
 	player=get_actor("player")
 	make_actor(player,63,10)
+	make_actor(coin, 63, 20)
+	
+	coins = 0
+	repeat
+		local coin = get_actor("coin")
+		make_actor(coin,
+		rnd(128), 0)
+		coins += 1
+	until(coins >= 10)
+	
 	
 	inffly = false
 	
@@ -44,92 +55,8 @@ function _update()
 	
 	for i, a in ipairs(actors) do
 	 -- update each actors action
-
-		-- offset position
-		a.ox = a.x - 2
-		a.oy = a.y - 3
-
-	-- teleport
-	if a.x+a.w > 128 then a.x = 1 end
-	if a.x < 0 then a.x = 123 end
-	if a.y+a.h > 128 then a.y = 1 end
-	if a.y < 0 then a.y = 123 end
-
- -- apply gravity and friction
-	a.dy+=gravity
- a.dx*=friction
-	a.dy*=friction
-	
-	-- movement detection for player --
-	if a.is_player then
-		
-		if (btn(⬅️)) then 
-			a.dx-=a.acc
-			a.flipped = true
-		end
-		
-		if (btn(➡️)) then
-			a.dx+=a.acc
-			a.flipped = false
-		end
-		
-		if (btn(⬆️)) then
-			if not inffly then
-				if a.og then
-					a.dy-=a.acc * a.boost
-					a.og = false
-					sfx(00)
-				end
-			else
-				a.dy-=a.acc
-			end
-		end
-		
-		if (btn(⬇️)) then
-			a.dy+=a.acc
-		end
-		
-	end
-	-- switch inf flight
-	if (btnp(🅾️, 1)) then
-		inffly = not inffly
-	end
-	
-	-- update player cords --
-
-	a.dx=mid(
-	-a.max_dx,
-	a.dx,
-	a.max_dx)
-
-	a.dy=mid(
-	-a.max_dy,
-	a.dy,
-	a.max_dy)
-	
-	-- collision calculation
-	if cmap((a.x + a.dx),
-	 a.y,
-	 a.w,
-	 a.h) then
-		a.dx = 0
-	end
-	
-	a.x+=a.dx
-	
-	if cmap(a.x,
-	(a.y + a.dy),
-	a.w,
-	a.h) then
-		if not inffly and is_player then
-			if a.dy>0 then
-				a.og=true
-			end
-		end
-		a.dy = 0
-	end
-	
-	a.y+=a.dy
+		update_actor(a)
+		animate(a)
 end
 	
 	-- set player action --
@@ -195,10 +122,12 @@ function _draw()
 	print(player.y)
 	print("i-fly="..tostr(inffly))
 ]]
+print(#actors)
 
 end
 -->8
 -- animate --
+--[[
 function animate(obj,st,en)
 	--obj has .sp
 	--st = start sprite
@@ -219,7 +148,7 @@ function animate(obj,st,en)
 		obj.sp = st 
 	end
 	
-end
+end]]
 -->8
 -- coin --
 coin = {
@@ -264,7 +193,7 @@ function cmap(x, y, w, h)
 	return col
 end
 -->8
--- make_actor --
+-- actor --
 function make_actor(k,x,y)
  --k = actor information
     -- sprite, animations, 
@@ -278,6 +207,7 @@ function make_actor(k,x,y)
 		ox=k.ox,
 		oy=k.oy,
 		is_player=k.is_player or false,
+		gravity=k.gravity or false,
 		x=x,
 		y=y,
 		dx=0,
@@ -301,24 +231,40 @@ function get_actor(a)
 -- return actor values 
 	if not is_legal_actor(a) then
 		return false
-		
-	elseif a == "player" then
-	k={
-		sp=1,
-		ox=0,--offset_x
-		oy=0,--offset_y
-		w=3,
-		h=4,
-		anims= {
-			walk={16,17,18},
-			fall={32,33},
-			idle={0,1},
-			jump={48,49}
-		},
-		is_player=true,
-	}
 	end
-	return k 
+	
+	local actors={
+		player={
+			sp=1,
+			ox=0,--offset_x
+			oy=0,--offset_y
+			w=3,
+			h=4,
+			state="idle",
+			anims= {
+				idle={0,1},
+				walk={16,17,18},
+				fall={32,33},
+				jump={48,49},
+			},
+			is_player=true,
+			gravity=true,
+		},
+		coin={
+				sp=3,
+				ox=0,--offset_x
+				oy=0,--offset_y
+				w=2,
+				h=2,
+				state="idle",
+				anims= {
+					idle={3,4},
+				},
+				is_player=false
+			}
+	}
+		
+	return actors[a] 
 end
 
 
@@ -330,11 +276,9 @@ function is_legal_actor(a)
 		if a == la then 
 			is_legal=true
 			break
-		else
-			assert(false, "invaid actor " .. a)
 		end
-		
 	end
+	assert(is_legal, "invaid actor " .. a)
 	
 	-- is actor missing values
 	if not a.sp 
@@ -350,6 +294,114 @@ function is_legal_actor(a)
 	
 end
 
+function update_actor(a)
+ -- offset position
+		a.ox = a.x - 2
+		a.oy = a.y - 3
+
+	-- teleport
+	if a.x+a.w > 128 then a.x = 1 end
+	if a.x < 0 then a.x = 123 end
+	if a.y+a.h > 128 then a.y = 1 end
+	if a.y < 0 then a.y = 123 end
+
+ -- apply gravity and friction
+	a.dx*=friction
+	a.dy+=gravity
+	a.dy*=friction
+
+	-- update player pos by input --
+	if a.is_player then
+		move_player(a)
+	end
+
+	
+	-- update actor pos --
+
+	a.dx=mid(
+	-a.max_dx,
+	a.dx,
+	a.max_dx)
+
+	a.dy=mid(
+	-a.max_dy,
+	a.dy,
+	a.max_dy)
+	
+	-- collision calculation
+	if cmap((a.x + a.dx),
+	 a.y,
+	 a.w,
+	 a.h) then
+		a.dx = 0
+	end
+	
+	
+	if cmap(a.x,
+	(a.y + a.dy),
+	a.w,
+	a.h) then
+		if not inffly and is_player then
+			if a.dy>0 then
+				a.og=true
+			end
+		end
+		a.dy = 0
+	end
+	
+	a.x+=a.dx
+	if a.gravity then
+		a.y+=a.dy
+	else
+		a.y+=0
+	end
+		
+end
+
+function animate(a)
+	local valid = false
+	if a.anims and a.anims[a.state] then
+		valid = true
+		assert(valid, a.state.."is not a valid animation")
+	end
+	
+	-- cycle through current animation
+	
+	
+end
+-->8
+--player
+function move_player(a)
+		if (btn(⬅️)) then 
+		a.dx-=a.acc
+		a.flipped = true
+	end
+	
+	if (btn(➡️)) then
+		a.dx+=a.acc
+		a.flipped = false
+	end
+	
+	if (btn(⬆️)) then
+		if not inffly then
+			if a.og then
+				a.dy-=a.acc * a.boost
+				a.og = false
+				sfx(00)
+			end
+		else
+			a.dy-=a.acc
+		end
+	end
+	
+	if (btn(⬇️)) then
+		a.dy+=a.acc
+	end
+	-- switch inf flight
+	if (btnp(🅾️, 1)) then
+		inffly = not inffly
+	end
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
