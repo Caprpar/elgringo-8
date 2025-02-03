@@ -7,7 +7,7 @@ function _init()
 actors = {}
 
 --	music(0) 
-	player={
+--[[	player={
 		x=70,--global_x
 		y=0,--global_y
 		ox=0,--offset_x
@@ -26,7 +26,7 @@ actors = {}
 		falling=false,
 		flying=false,
 		og=false, --on_ground
-	}
+	}]]
 	player=get_actor("player")
 	make_actor(player,63,10)
 	
@@ -173,7 +173,7 @@ function _draw()
 	cls()
 	map(0,0,0,0,128,32)
 	for i, a in ipairs(actors) do
-		spr(a.sp,a.x,a.y)
+		spr(a.sp,a.ox,a.oy,1,1,a.flipped)
 	end
 	
 	--[[
@@ -287,7 +287,7 @@ function make_actor(k,x,y)
 		acc=0.5,
 		acc=0.5,--acceleration
 		boost=100,--jump_value
-		fliped=false,
+		flipped=false,
 		running=false,
 		falling=false,
 		flying=false,
