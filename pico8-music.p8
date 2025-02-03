@@ -208,6 +208,8 @@ function make_actor(k,x,y)
 		oy=k.oy,
 		is_player=k.is_player or false,
 		gravity=k.gravity or false,
+		state=k.state,
+		anims=k.anims,
 		x=x,
 		y=y,
 		dx=0,
@@ -257,7 +259,7 @@ function get_actor(a)
 				w=2,
 				h=2,
 				state="idle",
-				anims= {
+				anims={
 					idle={3,4},
 				},
 				is_player=false
@@ -360,14 +362,26 @@ end
 
 function animate(a)
 	local valid = false
-	if a.anims and a.anims[a.state] then
+	if a.anims[a.state] then
 		valid = true
 		assert(valid, a.state.."is not a valid animation")
 	end
 	
 	-- cycle through current animation
+	-- first spr current anim cycl
+	-- last spr current anim cycl
+	-- if spr==last spr=first else
+	-- spr++
 	
+	local first = a.anims[a.state][1]
+	local last = a.anims[a.state][#a.anims[a.state]]
 	
+	if a.sp == last then 
+		a.sp=first
+	else
+		a.sp+=1
+	end
+		
 end
 -->8
 --player
