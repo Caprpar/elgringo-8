@@ -229,13 +229,9 @@ function update_actor(a)
 		a.ox = a.x - 2
 		a.oy = a.y - 3
 
-	-- teleport
-	--[[
-	if a.x+a.w > 128 then a.x = 1 end
-	if a.x < 0 then a.x = 123 end
-	if a.y+a.h > 128 then a.y = 1 end
-	if a.y < 0 then a.y = 123 end
-]]
+		local lx = a.ox
+		local ly = a.oy
+
  -- apply gravity and friction
 	a.dx*=friction
 	a.dy+=gravity
@@ -269,6 +265,7 @@ function update_actor(a)
 	
 	
 	if cmap(a.x,(a.y + a.dy),a.w,a.h) then
+		local col = true
 		if not inffly and a.is_player then
 			if a.dy>0 then
 				a.og = true
@@ -276,12 +273,21 @@ function update_actor(a)
 		end
 		a.dy = 0
 	end
-	
-	a.x+=a.dx
-	if a.gravity then
-		a.y+=a.dy
+		
+	if col then
+		a.dx = 0
+		a.dy = 0
+		a.x = lx
+		a.y = ly
 	else
-		a.y+=0
+		a.x+=a.dx
+		
+		if a.gravity then
+			a.y+=a.dy
+		else
+			a.y+=0
+		end
+
 	end
 		
 end
@@ -353,9 +359,9 @@ function move_player(a)
 		inffly = not inffly
 	end
 	
-	if a.dy > .5 then a.state="fall"
-	elseif a.dy < -.5 then a.state="jump"
-	elseif a.dx > .5 or a.dx < -.5 then a.state="walk"
+	if a.dy > .4 then a.state="fall"
+	elseif a.dy < -.4 then a.state="jump"
+	elseif a.dx > .4 or a.dx < -.4 then a.state="walk"
 	else a.state="idle" end
 	
 	
