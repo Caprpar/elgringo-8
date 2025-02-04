@@ -43,38 +43,6 @@ function _update()
 		update_actor(a)
 		animate(a)
 end
-	
-	-- set player action --
-	--[[
-	if player.dx > .5 
-	or player.dx < -.5 then 
-		player.running = true
-	else 
-		player.running = false 
-	end
-	
-	if player.dy > .5 then 
-		player.falling = true
-	else 
-		player.falling = false 
-	end
-	
-	if player.dy < -.5 then 
-		player.flying = true
-	else 
-		player.flying = false 
-	end
-	
-	if (player.falling) then 
-		animate(player,32,33)
-	elseif (player.running) then
-		animate(player,16,18)
-	elseif (player.flying) then
-		animate(player,48,49)
-	else animate(player,0,1)
-	end
-	]]
-	
 	take_coin()
 	
 end
@@ -385,9 +353,9 @@ function move_player(a)
 		inffly = not inffly
 	end
 	
-	if a.dx > .5 or a.dx < -.5 then a.state="walk"
-	elseif a.dy > .5 then a.state="fall"
+	if a.dy > .5 then a.state="fall"
 	elseif a.dy < -.5 then a.state="jump"
+	elseif a.dx > .5 or a.dx < -.5 then a.state="walk"
 	else a.state="idle" end
 	
 	
