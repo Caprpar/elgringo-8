@@ -10,12 +10,12 @@ function _init()
 	
 	coin=get_actor("coin")
 	player=get_actor("player")
-	make_actor(player,63,10)
+	p=make_actor(player,63,10)
 	make_actor(coin, 63, 20)
 	
 	inffly = false
 	
-	gravity=0.3 friction=0.85
+	gravity=0.4 friction=0.85
 	clock = 0 timer = 0.25
 	
 	score=0
@@ -59,6 +59,9 @@ function _draw()
 	
 	
 	print(#actors)
+	print(p.dy)
+	print(p.dx)
+	print(p.og)
 	camera(room_ox*128,room_oy*128)
 end
 -->8
@@ -143,7 +146,7 @@ function make_actor(k,x,y)
 		max_dy=3,
 		acc=0.5,
 		acc=0.5,--acceleration
-		boost=100,--jump_value
+		boost=5,--jump_value
 		flipped=false,
 		running=false,
 		falling=false,
@@ -236,7 +239,7 @@ function update_actor(a)
  -- apply gravity and friction
 	a.dx*=friction
 	a.dy+=gravity
-	a.dy*=friction
+	--a.dy*=friction
 
 	-- update player pos by input --
 	if a.is_player then
@@ -265,13 +268,10 @@ function update_actor(a)
 	end
 	
 	
-	if cmap(a.x,
-	(a.y + a.dy),
-	a.w,
-	a.h) then
-		if not inffly and is_player then
+	if cmap(a.x,(a.y + a.dy),a.w,a.h) then
+		if not inffly and a.is_player then
 			if a.dy>0 then
-				a.og=true
+				a.og = true
 			end
 		end
 		a.dy = 0
@@ -336,12 +336,12 @@ function move_player(a)
 	if (btn(⬆️)) then
 		if not inffly then
 			if a.og then
-				a.dy-=a.acc * a.boost
+				a.dy-=a.boost
 				a.og = false
 				sfx(00)
 			end
 		else
-			a.dy-=a.acc
+			a.dy-=a.boost
 		end
 	end
 	
