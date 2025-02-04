@@ -3,8 +3,13 @@ version 42
 __lua__
 -- init --
 function _init()
-	--music(0) 
-	player={
+
+actors = {}
+clock = 0
+clock_max= 60
+
+--	music(0) 
+--[[	player={
 		x=70,--global_x
 		y=0,--global_y
 		ox=0,--offset_x
@@ -25,7 +30,20 @@ function _init()
 		falling=false,
 		flying=false,
 		og=false, --on_ground
-	}
+	}]]
+	coin=get_actor("coin")
+	player=get_actor("player")
+	make_actor(player,63,10)
+	make_actor(coin, 63, 20)
+	
+	coins = 0
+	repeat
+		local coin = get_actor("coin")
+		make_actor(coin,
+		rnd(128), 0)
+		coins += 1
+	until(coins >= 10)
+	
 	
 	inffly = false
 	
@@ -40,95 +58,19 @@ end
 -->8
 -- update --
 function _update()
-	-- offset position
-	player.ox = player.x - 2
-	player.oy = player.y - 3
-
-	-- teleport
-	if player.x+player.w > 128 then player.x = 1 end
-	if player.x < 0 then player.x = 123 end
-	if player.y+player.h > 128 then player.y = 1 end
-	if player.y < 0 then player.y = 123 end
-
-
-	player.dy+=gravity
- player.dx*=friction
-	player.dy*=friction
-	
-	-- movement detection --
-	
- if (btn(⬅️)) then 
-  player.dx-=player.acc
-  player.flipped = true
- end
- 
- if (btn(➡️)) then
-  player.dx+=player.acc
-  player.flipped = false
+	if clock == clock_max then
+		clock = 0
+	else clock += 1
 	end
 	
-	if (btn(⬆️)) then
-		if not inffly then
-			if player.og then
-				player.dy-=player.acc * player.boost
-				player.og = false
-				sfx(00)
-			end
-		else
-			player.dy-=player.acc
-		end
-	end
-	
-	if (btn(⬇️)) then
-		player.dy+=player.acc
-	end
-	
-	-- switch inf flight
-	if (btnp(🅾️, 1)) then
-		inffly = not inffly
-	end
-	
-	-- clamp speeds --
-	
-	player.dx=clamp(player.dx,
-	-player.max_dx,
-	player.max_dx)
-	
-	player.dy=clamp(
-	player.dy,
-	-player.max_jump,
-	player.max_gravity)
-	
-	-- collision calculation
-	if cmap((player.x + player.dx),
-	 player.y,
-	 player.w,
-	 player.h) then
-		player.dx = 0
-	end
-	
-	player.x+=player.dx
-	
-	if cmap(player.x,
-	(player.y + player.dy),
-	player.w,
-	player.h) then
-		if not inffly then
-			if player.dy>0 then
-				player.og=true
-			end
-		end
-		player.dy = 0
-	end
-	
-	if player.dy > 0 then
-		player.og = false
-	end
-	
-	player.y+=player.dy
+	for i, a in ipairs(actors) do
+	 -- update each actors action
+		update_actor(a)
+		animate(a)
+end
 	
 	-- set player action --
-	
+	--[[
 	if player.dx > .5 
 	or player.dx < -.5 then 
 		player.running = true
@@ -156,8 +98,7 @@ function _update()
 		animate(player,48,49)
 	else animate(player,0,1)
 	end
-	
-	animate(coin,3,4)
+	]]
 	
 	take_coin()
 	
@@ -168,6 +109,12 @@ end
 function _draw() 
 	cls()
 	map(0,0,0,0,128,32)
+	print(clock)
+	for i, a in ipairs(actors) do
+		spr(a.sp,a.ox,a.oy,1,1,a.flipped)
+	end
+	
+	--[[
 	spr(
 		player.sp, 
 		player.ox,
@@ -189,11 +136,12 @@ function _draw()
 	print(player.x)
 	print(player.y)
 	print("i-fly="..tostr(inffly))
-
-	print("coins:"..score,10)
+]]
+print(#actors)
 end
 -->8
 -- animate --
+--[[
 function animate(obj,st,en)
 	--obj has .sp
 	--st = start sprite
@@ -214,7 +162,7 @@ function animate(obj,st,en)
 		obj.sp = st 
 	end
 	
-end
+end]]
 -->8
 -- coin --
 coin = {
@@ -270,16 +218,228 @@ function cmap(x, y, w, h)
 	return col
 end
 -->8
--- helper functions
+-- actor --
+function make_actor(k,x,y)
+ --k = actor information
+    -- sprite, animations, 
+    -- height, width
+    -- offset_x, offset_y,
+    -- animations
+ a={
+		sp=k.sp,
+		w=k.w,
+		h=k.h,
+		ox=k.ox,
+		oy=k.oy,
+		is_player=k.is_player or false,
+		gravity=k.gravity or false,
+		state=k.state,
+		anims=k.anims,
+		x=x,
+		y=y,
+		dx=0,
+		dy=0,
+		max_dx=3,
+		max_dy=3,
+		acc=0.5,
+		acc=0.5,--acceleration
+		boost=100,--jump_value
+		flipped=false,
+		running=false,
+		falling=false,
+		flying=false,
+		og=false, --on_ground
+	}
+	add(actors, a)
+ return a
+end
 
-function clamp(val, mi, ma)
-	if (mi > val) then
-		val = mi
+function get_actor(a)
+-- return actor values 
+	if not is_legal_actor(a) then
+		return false
 	end
-	if (val > ma) then
-		val = ma
+	
+	local actors={
+		player={
+			sp=1,
+			ox=0,--offset_x
+			oy=0,--offset_y
+			w=3,
+			h=4,
+			state="idle",
+			anims= {
+				idle={0,1},
+				walk={16,17,18},
+				fall={32,33},
+				jump={48,49},
+			},
+			is_player=true,
+			gravity=true,
+		},
+		coin={
+				sp=3,
+				ox=0,--offset_x
+				oy=0,--offset_y
+				w=2,
+				h=2,
+				state="idle",
+				anims={
+					idle={3,4},
+				},
+				is_player=false
+			}
+	}
+		
+	return actors[a] 
+end
+
+
+function is_legal_actor(a)
+	local is_legal = false
+	local legal_actors={"player","coin"} -- append when new actor is created
+	-- is actor legal
+	for i, la in ipairs(legal_actors) do
+		if a == la then 
+			is_legal=true
+			break
+		end
 	end
-	return val
+	assert(is_legal, "invaid actor " .. a)
+	
+	-- is actor missing values
+	if not a.sp 
+	or not a.w 
+	or not a.h 
+	or not a.ox
+	or not a.oy then
+		--assert(false, a .. " is missing attributes")
+		return true
+	else
+		return true
+	end
+	
+end
+
+function update_actor(a)
+ -- offset position
+		a.ox = a.x - 2
+		a.oy = a.y - 3
+
+	-- teleport
+	if a.x+a.w > 128 then a.x = 1 end
+	if a.x < 0 then a.x = 123 end
+	if a.y+a.h > 128 then a.y = 1 end
+	if a.y < 0 then a.y = 123 end
+
+ -- apply gravity and friction
+	a.dx*=friction
+	a.dy+=gravity
+	a.dy*=friction
+
+	-- update player pos by input --
+	if a.is_player then
+		move_player(a)
+	end
+
+	
+	-- update actor pos --
+
+	a.dx=mid(
+	-a.max_dx,
+	a.dx,
+	a.max_dx)
+
+	a.dy=mid(
+	-a.max_dy,
+	a.dy,
+	a.max_dy)
+	
+	-- collision calculation
+	if cmap((a.x + a.dx),
+	 a.y,
+	 a.w,
+	 a.h) then
+		a.dx = 0
+	end
+	
+	
+	if cmap(a.x,
+	(a.y + a.dy),
+	a.w,
+	a.h) then
+		if not inffly and is_player then
+			if a.dy>0 then
+				a.og=true
+			end
+		end
+		a.dy = 0
+	end
+	
+	a.x+=a.dx
+	if a.gravity then
+		a.y+=a.dy
+	else
+		a.y+=0
+	end
+		
+end
+
+function animate(a)
+	local valid = false
+	if a.anims[a.state] then
+		valid = true
+		assert(valid, a.state.."is not a valid animation")
+	end
+	
+	-- cycle through current animation
+	-- first spr current anim cycl
+	-- last spr current anim cycl
+	-- if spr==last spr=first else
+	-- spr++
+	
+	local first = a.anims[a.state][1]
+	local last = a.anims[a.state][#a.anims[a.state]]
+	
+	if a.sp == last then 
+		a.sp=first
+	else
+		a.sp+=1
+	end
+		
+end
+-->8
+--player
+function move_player(a)
+		if (btn(⬅️)) then 
+		a.dx-=a.acc
+		a.flipped = true
+	end
+	
+	if (btn(➡️)) then
+		a.dx+=a.acc
+		a.flipped = false
+	end
+	
+	if (btn(⬆️)) then
+		if not inffly then
+			if a.og then
+				a.dy-=a.acc * a.boost
+				a.og = false
+				sfx(00)
+			end
+		else
+			a.dy-=a.acc
+		end
+	end
+	
+	if (btn(⬇️)) then
+		a.dy+=a.acc
+	end
+	-- switch inf flight
+	if (btnp(🅾️, 1)) then
+		inffly = not inffly
+	end
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
