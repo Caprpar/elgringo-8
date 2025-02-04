@@ -176,29 +176,21 @@ function _draw()
 		1,
 		player.flipped)
 	
-<<<<<<< HEAD
-	spr(coin.sp, coin.x, coin.y,1,1)
-	--[[
-	print("dx= "..player.dx)
-=======
+
 	if coin.act then
 		spr(coin.sp, coin.x, coin.y,1,1)
 	end
 	
 	-- informational prints
 	print("dx= "..player.dx,7)
->>>>>>> 11154e6c1fb8c1261a4f5df5554b31e62e1489f5
 	print("dy= "..player.dy)
 	print(player.sp)
 	print(clock)
 	print(player.x)
 	print(player.y)
 	print("i-fly="..tostr(inffly))
-<<<<<<< HEAD
-	]]
-=======
+
 	print("coins:"..score,10)
->>>>>>> 11154e6c1fb8c1261a4f5df5554b31e62e1489f5
 end
 -->8
 -- animate --
