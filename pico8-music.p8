@@ -6,7 +6,7 @@ function _init()
 
 actors = {}
 clock = 0
-clock_max= 60
+clock_max= 30
 
 --	music(0) 
 --[[	player={
@@ -269,10 +269,10 @@ function get_actor(a)
 			h=4,
 			state="idle",
 			anims= {
-				idle={0,1},
-				walk={16,17,18},
-				fall={32,33},
-				jump={48,49},
+				idle={fr=10,0,1},
+				walk={fr=10,16,17,18},
+				fall={fr=5,32,33},
+				jump={fr=10,48,49},
 			},
 			is_player=true,
 			gravity=true,
@@ -285,7 +285,7 @@ function get_actor(a)
 				h=2,
 				state="idle",
 				anims={
-					idle={3,4},
+					idle={fr=10,3,4},
 				},
 				is_player=false
 			}
@@ -398,15 +398,22 @@ function animate(a)
 	-- if spr==last spr=first else
 	-- spr++
 	
-	local first = a.anims[a.state][1]
-	local last = a.anims[a.state][#a.anims[a.state]]
+	local state = a.anims[a.state]
 	
-	if a.sp == last then 
-		a.sp=first
-	else
-		a.sp+=1
+	local first = state[1]
+	local last = state[#state]
+	
+	if a.sp < first or a.sp > last then
+		a.sp = first
 	end
-		
+	
+	if (clock % state.fr == 0 and clock != 0) then	
+		if a.sp == last then 
+			a.sp=first
+		else
+			a.sp+=1
+		end
+	end
 end
 -->8
 --player
@@ -440,6 +447,13 @@ function move_player(a)
 	if (btnp(🅾️, 1)) then
 		inffly = not inffly
 	end
+	
+	if a.dx > .5 or a.dx < -.5 then a.state="walk"
+	elseif a.dy > .5 then a.state="fall"
+	elseif a.dy < -.5 then a.state="jump"
+	else a.state="idle" end
+	
+	
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
