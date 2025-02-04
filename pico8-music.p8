@@ -5,6 +5,8 @@ __lua__
 function _init()
 
 actors = {}
+clock = 0
+clock_max= 60
 
 --	music(0) 
 --[[	player={
@@ -52,6 +54,10 @@ end
 -->8
 -- update --
 function _update()
+	if clock == clock_max then
+		clock = 0
+	else clock += 1
+	end
 	
 	for i, a in ipairs(actors) do
 	 -- update each actors action
@@ -99,6 +105,7 @@ end
 function _draw() 
 	cls()
 	map(0,0,0,0,128,32)
+	print(clock)
 	for i, a in ipairs(actors) do
 		spr(a.sp,a.ox,a.oy,1,1,a.flipped)
 	end
