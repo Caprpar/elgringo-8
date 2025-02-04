@@ -173,7 +173,7 @@ function get_actor(a)
 			state="idle",
 			anims= {
 				idle={fr=10,0,1},
-				walk={fr=10,16,17,18},
+				walk={fr=2,16,17,18},
 				fall={fr=5,32,33},
 				jump={fr=10,48,49},
 			},
@@ -188,7 +188,7 @@ function get_actor(a)
 				h=2,
 				state="idle",
 				anims={
-					idle={fr=10,3,4},
+					idle={fr=5,3,4},
 				},
 				is_player=false
 			}
